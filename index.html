@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080e1b">
-<title>ROBOT CONTROL | Remote System</title>
+<title>ROBOT CONTROL | Joystick</title>
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -19,7 +19,6 @@
 :root {
   --bg: #080e1b;
   --panel: #111c30;
-  --panel2: #17243b;
   --blue: #3985ff;
   --cyan: #42d9ff;
   --red: #f04452;
@@ -120,7 +119,6 @@ input:not([type="range"]) {
 
 input:focus {
   border-color: var(--blue);
-  box-shadow: 0 0 0 2px #3985ff22;
 }
 
 button {
@@ -140,11 +138,6 @@ button {
   font-weight: 900;
   letter-spacing: 1px;
   box-shadow: 0 5px 20px #2475f555;
-  margin-top: 3px;
-}
-
-.connect:active {
-  transform: scale(.98);
 }
 
 .speed-card {
@@ -152,7 +145,7 @@ button {
   padding: 17px;
   border: 1px solid #263750;
   border-radius: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .speed-top {
@@ -187,66 +180,118 @@ button {
   margin-top: 7px;
 }
 
-.pad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  max-width: 350px;
-  margin: 0 auto;
+/* JOYSTICK */
+
+.joystick-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 0 20px;
 }
 
-.empty {
-  visibility: hidden;
-}
-
-.move, .stop {
-  height: 88px;
-  border: 1px solid #45628d;
-  border-radius: 17px;
-  color: white;
+.joystick {
+  width: min(280px, 75vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  position: relative;
+  background:
+    radial-gradient(circle, #f9fbff 0%, #e4edf9 75%, #c7d5e9 100%);
+  border: 5px solid #8da7c8;
+  box-shadow:
+    0 0 0 8px #ffffff0b,
+    inset 0 5px 20px #263d5b22,
+    0 12px 35px #0007;
   touch-action: none;
   user-select: none;
-  transition: transform .1s, filter .1s;
+  overflow: hidden;
 }
 
-.move {
-  background: linear-gradient(145deg, #307ff2, #1750b7);
-  box-shadow: 0 6px 18px #1750b755;
-  font-size: 28px;
+.joystick::before {
+  content: "";
+  position: absolute;
+  width: 65%;
+  height: 65%;
+  left: 17.5%;
+  top: 17.5%;
+  border: 2px dashed #9aacc3;
+  border-radius: 50%;
+  pointer-events: none;
 }
 
-.move span {
-  display: block;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  margin-top: 5px;
+.joystick::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 85%;
+  background: #b4c3d866;
+  left: 50%;
+  top: 7.5%;
+  pointer-events: none;
 }
 
-.stop {
-  background: linear-gradient(145deg, #fa4b59, #b81730);
-  border-color: #ff7a83;
-  box-shadow: 0 6px 20px #e51e3e55;
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: 1px;
+.axis-horizontal {
+  position: absolute;
+  width: 85%;
+  height: 2px;
+  background: #b4c3d866;
+  left: 7.5%;
+  top: 50%;
+  pointer-events: none;
 }
 
-.move:active, .stop:active {
-  transform: scale(.94);
-  filter: brightness(1.25);
+.knob {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #344c70, #14233b);
+  border: 4px solid #647d9e;
+  box-shadow:
+    0 7px 18px #0007,
+    inset 0 3px 8px #ffffff22;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 26px;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.instructions {
+.joystick-hint {
   text-align: center;
   color: var(--muted);
   font-size: 11px;
   line-height: 1.8;
-  margin-top: 20px;
+  margin-bottom: 18px;
 }
 
-.warning {
-  color: #ffbf47;
+.direction {
+  text-align: center;
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 17px;
+}
+
+.stop {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(145deg, #fa4b59, #b81730);
+  border: 1px solid #ff7a83;
+  border-radius: 15px;
+  color: white;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  box-shadow: 0 6px 20px #e51e3e55;
+}
+
+.stop:active {
+  transform: scale(.97);
 }
 
 footer {
@@ -255,15 +300,6 @@ footer {
   font-size: 10px;
   letter-spacing: 2px;
   padding: 12px;
-}
-
-@media (max-width: 360px) {
-  .move, .stop {
-    height: 76px;
-  }
-  .panel {
-    padding: 15px;
-  }
 }
 </style>
 </head>
@@ -313,7 +349,7 @@ footer {
 
 <section class="panel">
 
-  <div class="section-title">02 / CONTROLLO VELOCITÀ</div>
+  <div class="section-title">02 / VELOCITÀ</div>
 
   <div class="speed-card">
     <div class="speed-top">
@@ -321,11 +357,8 @@ footer {
       <span><span id="speedValue">30</span>%</span>
     </div>
 
-    <input id="speed"
-      type="range"
-      min="10"
-      max="100"
-      value="30">
+    <input id="speed" type="range"
+      min="10" max="100" value="30">
 
     <div class="speed-scale">
       <span>MINIMA</span>
@@ -333,50 +366,28 @@ footer {
     </div>
   </div>
 
-  <div class="section-title">03 / MOVIMENTO</div>
+  <div class="section-title">03 / JOYSTICK 360°</div>
 
-  <div class="pad">
-
-    <div class="empty"></div>
-
-    <button class="move" data-command="FWD">
-      ▲
-      <span>AVANTI</span>
-    </button>
-
-    <div class="empty"></div>
-
-    <button class="move" data-command="LEFT">
-      ◀
-      <span>SINISTRA</span>
-    </button>
-
-    <button class="stop" id="stopButton">
-      🛑
-      <br>STOP
-    </button>
-
-    <button class="move" data-command="RIGHT">
-      ▶
-      <span>DESTRA</span>
-    </button>
-
-    <div class="empty"></div>
-
-    <button class="move" data-command="REV">
-      ▼
-      <span>INDIETRO</span>
-    </button>
-
-    <div class="empty"></div>
-
+  <div class="joystick-area">
+    <div class="joystick" id="joystick">
+      <div class="axis-horizontal"></div>
+      <div class="knob" id="knob">✥</div>
+    </div>
   </div>
 
-  <div class="instructions">
-    Tieni premuta una freccia per muovere il robot.<br>
-    Rilascia per fermarlo automaticamente.<br>
-    <span class="warning">STOP interrompe immediatamente i comandi.</span>
+  <div class="direction" id="direction">
+    ● CENTRO
   </div>
+
+  <div class="joystick-hint">
+    Trascina la pallina in qualsiasi direzione.<br>
+    Puoi muoverti anche in diagonale.<br>
+    Rilascia per fermare il robot.
+  </div>
+
+  <button class="stop" id="stopButton">
+    🛑 STOP EMERGENZA
+  </button>
 
 </section>
 
@@ -389,13 +400,21 @@ footer {
 <script>
 let client = null;
 let interval = null;
+let joystickActive = false;
 
 const topic = "robot/robot01/cmd";
-const statusText = document.getElementById("status");
+
+const joystick = document.getElementById("joystick");
+const knob = document.getElementById("knob");
+const directionText = document.getElementById("direction");
+
+let joyX = 0;
+let joyY = 0;
 
 function setStatus(message, color) {
-  statusText.textContent = message;
-  statusText.style.color = color;
+  const status = document.getElementById("status");
+  status.textContent = message;
+  status.style.color = color;
 }
 
 function connectMQTT() {
@@ -418,18 +437,15 @@ function connectMQTT() {
 
   setStatus("● CONNESSIONE...", "#ffbf47");
 
-  client = mqtt.connect(
-    `wss://${host}:${port}/mqtt`,
-    {
-      username: username,
-      password: password,
-      clientId: "robot_controller_" +
-        Math.random().toString(16).slice(2),
-      clean: true,
-      reconnectPeriod: 3000,
-      connectTimeout: 10000
-    }
-  );
+  client = mqtt.connect(`wss://${host}:${port}/mqtt`, {
+    username,
+    password,
+    clientId: "robot_controller_" +
+      Math.random().toString(16).slice(2),
+    clean: true,
+    reconnectPeriod: 3000,
+    connectTimeout: 10000
+  });
 
   client.on("connect", () => {
     setStatus("● ONLINE", "#23d18b");
@@ -452,14 +468,16 @@ function connectMQTT() {
   });
 }
 
-function sendCommand(command) {
+function sendJoystick() {
   if (!client || !client.connected) return;
 
-  const speed = document.getElementById("speed").value;
+  const speed = Number(document.getElementById("speed").value);
 
+  // Coordinate da -100 a +100.
+  // Il formato JOY è da implementare nel programma ESP32.
   client.publish(
     topic,
-    `${command},${speed}`,
+    `JOY,${Math.round(joyX)},${Math.round(joyY)},${speed}`,
     { qos: 0 }
   );
 }
@@ -467,11 +485,100 @@ function sendCommand(command) {
 function emergencyStop() {
   clearInterval(interval);
   interval = null;
+  joystickActive = false;
 
   if (client && client.connected) {
     client.publish(topic, "STOP", { qos: 0 });
   }
+
+  joyX = 0;
+  joyY = 0;
+  knob.style.left = "50%";
+  knob.style.top = "50%";
+  directionText.textContent = "● CENTRO";
 }
+
+function updateJoystick(event) {
+  const rect = joystick.getBoundingClientRect();
+
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  let dx = event.clientX - rect.left - centerX;
+  let dy = event.clientY - rect.top - centerY;
+
+  const maxDistance = rect.width * 0.36;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  if (distance > maxDistance) {
+    dx = dx / distance * maxDistance;
+    dy = dy / distance * maxDistance;
+  }
+
+  joyX = Math.round((dx / maxDistance) * 100);
+  joyY = Math.round((-dy / maxDistance) * 100);
+
+  knob.style.left =
+    `${50 + (dx / rect.width) * 100}%`;
+
+  knob.style.top =
+    `${50 + (dy / rect.height) * 100}%`;
+
+  const horizontal =
+    joyX > 20 ? "DESTRA" :
+    joyX < -20 ? "SINISTRA" : "";
+
+  const vertical =
+    joyY > 20 ? "AVANTI" :
+    joyY < -20 ? "INDIETRO" : "";
+
+  directionText.textContent =
+    vertical && horizontal
+      ? `↗ ${vertical} + ${horizontal}`
+      : vertical || horizontal || "● CENTRO";
+
+  if (interval) {
+    clearInterval(interval);
+    interval = null;
+  }
+
+  if (Math.abs(joyX) < 5 && Math.abs(joyY) < 5) {
+    emergencyStop();
+    return;
+  }
+
+  if (!client || !client.connected) {
+    setStatus("● PRIMA CONNETTITI", "#f04452");
+    return;
+  }
+
+  joystickActive = true;
+  sendJoystick();
+
+  interval = setInterval(() => {
+    if (joystickActive) sendJoystick();
+  }, 200);
+}
+
+joystick.addEventListener("pointerdown", (event) => {
+  if (!client || !client.connected) {
+    setStatus("● PRIMA CONNETTITI", "#f04452");
+    return;
+  }
+
+  joystick.setPointerCapture(event.pointerId);
+  joystickActive = true;
+  updateJoystick(event);
+});
+
+joystick.addEventListener("pointermove", (event) => {
+  if (!joystickActive) return;
+  updateJoystick(event);
+});
+
+joystick.addEventListener("pointerup", emergencyStop);
+joystick.addEventListener("pointercancel", emergencyStop);
+joystick.addEventListener("lostpointercapture", emergencyStop);
 
 document.getElementById("connectButton")
   .addEventListener("click", connectMQTT);
@@ -480,33 +587,9 @@ document.getElementById("stopButton")
   .addEventListener("click", emergencyStop);
 
 document.getElementById("speed")
-  .addEventListener("input", (event) => {
+  .addEventListener("input", event => {
     document.getElementById("speedValue").textContent =
       event.target.value;
-  });
-
-document.querySelectorAll("[data-command]")
-  .forEach(button => {
-
-    button.addEventListener("pointerdown", event => {
-      event.preventDefault();
-
-      if (!client || !client.connected) {
-        setStatus("● PRIMA CONNETTITI", "#f04452");
-        return;
-      }
-
-      clearInterval(interval);
-      sendCommand(button.dataset.command);
-
-      interval = setInterval(() => {
-        sendCommand(button.dataset.command);
-      }, 200);
-    });
-
-    button.addEventListener("pointerup", emergencyStop);
-    button.addEventListener("pointerleave", emergencyStop);
-    button.addEventListener("pointercancel", emergencyStop);
   });
 
 window.addEventListener("blur", emergencyStop);
