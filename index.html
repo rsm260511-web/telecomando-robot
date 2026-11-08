@@ -4,78 +4,234 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Telecomando Robot</title>
+  <meta name="theme-color" content="#101827">
+  <title>Robot Controller</title>
+
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
       background: #101827;
       color: white;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 20px;
     }
+
     .panel {
-      max-width: 420px;
-      margin: auto;
-      background: #1e293b;
-      padding: 22px;
-      border-radius: 18px;
-    }
-    input {
-      box-sizing: border-box;
       width: 100%;
-      padding: 12px;
-      margin: 6px 0;
-      border-radius: 8px;
-      border: 0;
+      max-width: 430px;
+      margin: auto;
+      padding: 22px;
+      background: #1e293b;
+      border-radius: 22px;
+      box-shadow: 0 10px 35px #0006;
     }
-    button {
-      padding: 20px;
-      margin: 7px;
-      border: 0;
-      border-radius: 12px;
-      font-size: 20px;
+
+    h1 {
+      font-size: 25px;
+      margin-top: 5px;
+    }
+
+    #status {
+      color: #fbbf24;
       font-weight: bold;
-      min-width: 90px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 6px 0;
+      border: 0;
+      border-radius: 9px;
+      font-size: 15px;
+    }
+
+    .connect {
+      width: 100%;
+      padding: 15px;
+      margin-top: 8px;
+      background: #16a34a;
+      color: white;
+      border: 0;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 25px 0;
+    }
+
+    .move, .stop {
+      width: 100%;
+      height: 95px;
+      border: 0;
+      border-radius: 15px;
+      color: white;
+      font-weight: bold;
       cursor: pointer;
       touch-action: none;
+      user-select: none;
     }
-    .move { background: #2563eb; color: white; }
-    .stop { background: #dc2626; color: white; width: 90%; }
-    .connect { background: #16a34a; color: white; width: 90%; }
-    #status { color: #fbbf24; }
+
+    .move {
+      background: #2563eb;
+      font-size: 30px;
+    }
+
+    .move span {
+      display: block;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .stop {
+      background: #dc2626;
+      font-size: 19px;
+      box-shadow: 0 0 15px #dc262655;
+    }
+
+    .empty {
+      visibility: hidden;
+    }
+
+    .speed-box {
+      background: #0f172a;
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    #speed {
+      accent-color: #3b82f6;
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
   </style>
 </head>
+
 <body>
-  <div class="panel">
-    <h1>🤖 Robot Controller</h1>
-    <p id="status">Non connesso</p>
 
-    <h3>Connessione MQTT</h3>
-    <input id="host" placeholder="Indirizzo broker MQTT">
-    <input id="port" value="8884" placeholder="Porta WebSocket">
-    <input id="username" placeholder="Nome utente MQTT">
-    <input id="password" type="password" placeholder="Password MQTT">
-    <button class="connect" onclick="connectMQTT()">CONNETTI</button>
+  <main class="panel">
 
-    <h3>Velocità: <span id="speedValue">30</span>%</h3>
-    <input id="speed" type="range" min="10" max="100" value="30"
-      oninput="speedValue.textContent=this.value">
+    <h1>🤖 ROBOT CONTROLLER</h1>
 
-    <h3>Movimento</h3>
-    <div><button class="move" data-command="FWD">⬆️</button></div>
-    <div>
-      <button class="move" data-command="LEFT">⬅️</button>
-      <button class="stop" onclick="sendStop()">STOP</button>
-      <button class="move" data-command="RIGHT">➡️</button>
+    <p id="status">🔴 Non connesso</p>
+
+    <h3>Connessione online</h3>
+
+    <input
+      id="host"
+      placeholder="Indirizzo broker MQTT"
+      autocomplete="off"
+    >
+
+    <input
+      id="port"
+      type="number"
+      value="8884"
+      placeholder="Porta WebSocket"
+    >
+
+    <input
+      id="username"
+      placeholder="Nome utente MQTT"
+      autocomplete="username"
+    >
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Password MQTT"
+      autocomplete="current-password"
+    >
+
+    <button class="connect" id="connectButton">
+      CONNETTI AL ROBOT
+    </button>
+
+    <div class="speed-box">
+      <h3>
+        Velocità:
+        <span id="speedValue">30</span>%
+      </h3>
+
+      <input
+        id="speed"
+        type="range"
+        min="10"
+        max="100"
+        value="30"
+      >
     </div>
-    <div><button class="move" data-command="REV">⬇️</button></div>
-  </div>
+
+    <h3>COMANDI DI MOVIMENTO</h3>
+
+    <div class="pad">
+
+      <div class="empty"></div>
+
+      <button class="move" data-command="FWD">
+        ⬆️
+        <span>AVANTI</span>
+      </button>
+
+      <div class="empty"></div>
+
+      <button class="move" data-command="LEFT">
+        ⬅️
+        <span>SINISTRA</span>
+      </button>
+
+      <button class="stop" id="stopButton">
+        🛑<br>
+        STOP<br>
+        EMERGENZA
+      </button>
+
+      <button class="move" data-command="RIGHT">
+        ➡️
+        <span>DESTRA</span>
+      </button>
+
+      <div class="empty"></div>
+
+      <button class="move" data-command="REV">
+        ⬇️
+        <span>INDIETRO</span>
+      </button>
+
+      <div class="empty"></div>
+
+    </div>
+
+    <p>Per muovere il robot, tieni premuta una freccia.</p>
+    <p>Rilasciando il pulsante viene inviato STOP.</p>
+
+  </main>
 
 <script>
   let client = null;
-  const topic = "robot/robot01/cmd";
   let interval = null;
+
+  const topic = "robot/robot01/cmd";
+
+  const statusText = document.getElementById("status");
+
+  function setStatus(message) {
+    statusText.textContent = message;
+  }
 
   function connectMQTT() {
     const host = document.getElementById("host").value.trim();
@@ -83,70 +239,117 @@
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    if (!host || !username || !password) {
-      alert("Inserisci i dati del broker MQTT.");
+    if (!host || !port || !username || !password) {
+      alert("Inserisci tutti i dati MQTT.");
       return;
     }
 
-    document.getElementById("status").textContent = "Connessione...";
+    if (client) {
+      client.end(true);
+      client = null;
+    }
 
-    client = mqtt.connect(`wss://${host}:${port}/mqtt`, {
-      username,
-      password,
-      clientId: "robot_controller_" + Math.random().toString(16).slice(2),
-      clean: true,
-      reconnectPeriod: 3000,
-      connectTimeout: 10000
-    });
+    setStatus("🟡 Connessione in corso...");
+
+    client = mqtt.connect(
+      `wss://${host}:${port}/mqtt`,
+      {
+        username: username,
+        password: password,
+        clientId: "robot_controller_" +
+          Math.random().toString(16).slice(2),
+        clean: true,
+        reconnectPeriod: 3000,
+        connectTimeout: 10000
+      }
+    );
 
     client.on("connect", () => {
-      document.getElementById("status").textContent = "Connesso ✅";
+      setStatus("🟢 CONNESSO AL ROBOT");
     });
 
-    client.on("error", (err) => {
-      document.getElementById("status").textContent = "Errore di connessione";
-      console.error(err);
+    client.on("reconnect", () => {
+      emergencyStop();
+      setStatus("🟡 Riconnessione...");
+    });
+
+    client.on("error", (error) => {
+      console.error(error);
+      setStatus("🔴 Errore di connessione");
     });
 
     client.on("close", () => {
-      document.getElementById("status").textContent = "Disconnesso";
+      emergencyStop();
+      setStatus("🔴 Disconnesso");
     });
   }
 
   function sendCommand(command) {
     if (!client || !client.connected) return;
+
     const speed = document.getElementById("speed").value;
-    client.publish(topic, `${command},${speed}`);
+
+    client.publish(
+      topic,
+      `${command},${speed}`,
+      { qos: 0 }
+    );
   }
 
-  function sendStop() {
+  function emergencyStop() {
     clearInterval(interval);
     interval = null;
+
     if (client && client.connected) {
       client.publish(topic, "STOP");
     }
   }
 
-  document.querySelectorAll("[data-command]").forEach(button => {
-    button.addEventListener("pointerdown", event => {
-      event.preventDefault();
-      if (!client || !client.connected) return;
-      clearInterval(interval);
-      sendCommand(button.dataset.command);
-      interval = setInterval(() => {
-        sendCommand(button.dataset.command);
-      }, 200);
+  document.getElementById("connectButton")
+    .addEventListener("click", connectMQTT);
+
+  document.getElementById("stopButton")
+    .addEventListener("click", emergencyStop);
+
+  document.getElementById("speed")
+    .addEventListener("input", (event) => {
+      document.getElementById("speedValue").textContent =
+        event.target.value;
     });
 
-    button.addEventListener("pointerup", sendStop);
-    button.addEventListener("pointerleave", sendStop);
-    button.addEventListener("pointercancel", sendStop);
+  document.querySelectorAll("[data-command]")
+    .forEach(button => {
+
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+
+        if (!client || !client.connected) {
+          setStatus("🔴 Prima connettiti al robot");
+          return;
+        }
+
+        clearInterval(interval);
+
+        sendCommand(button.dataset.command);
+
+        interval = setInterval(() => {
+          sendCommand(button.dataset.command);
+        }, 200);
+      });
+
+      button.addEventListener("pointerup", emergencyStop);
+      button.addEventListener("pointerleave", emergencyStop);
+      button.addEventListener("pointercancel", emergencyStop);
+    });
+
+  window.addEventListener("blur", emergencyStop);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) emergencyStop();
   });
 
-  window.addEventListener("blur", sendStop);
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) sendStop();
-  });
+  window.addEventListener("beforeunload", emergencyStop);
 </script>
+
 </body>
 </html>
