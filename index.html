@@ -2,353 +2,520 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101827">
-  <title>Robot Controller</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080e1b">
+<title>ROBOT CONTROL | Remote System</title>
 
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    body {
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      background: #101827;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
+:root {
+  --bg: #080e1b;
+  --panel: #111c30;
+  --panel2: #17243b;
+  --blue: #3985ff;
+  --cyan: #42d9ff;
+  --red: #f04452;
+  --green: #23d18b;
+  --text: #f3f7ff;
+  --muted: #8b9bb5;
+}
 
-    .panel {
-      width: 100%;
-      max-width: 430px;
-      margin: auto;
-      padding: 22px;
-      background: #1e293b;
-      border-radius: 22px;
-      box-shadow: 0 10px 35px #0006;
-    }
+body {
+  min-height: 100vh;
+  padding: 25px 15px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #183b70 0%, transparent 48%),
+    var(--bg);
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+}
 
-    h1 {
-      font-size: 25px;
-      margin-top: 5px;
-    }
+.container {
+  max-width: 480px;
+  margin: auto;
+}
 
-    #status {
-      color: #fbbf24;
-      font-weight: bold;
-    }
+header {
+  text-align: center;
+  margin: 12px 0 25px;
+}
 
-    input {
-      width: 100%;
-      padding: 13px;
-      margin: 6px 0;
-      border: 0;
-      border-radius: 9px;
-      font-size: 15px;
-    }
+.logo {
+  font-size: 48px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 15px #3985ff88);
+}
 
-    .connect {
-      width: 100%;
-      padding: 15px;
-      margin-top: 8px;
-      background: #16a34a;
-      color: white;
-      border: 0;
-      border-radius: 10px;
-      font-weight: bold;
-      font-size: 16px;
-    }
+h1 {
+  font-size: 25px;
+  letter-spacing: 2px;
+  font-weight: 900;
+}
 
-    .pad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: 25px 0;
-    }
+.subtitle {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 3px;
+  margin-top: 7px;
+}
 
-    .move, .stop {
-      width: 100%;
-      height: 95px;
-      border: 0;
-      border-radius: 15px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      touch-action: none;
-      user-select: none;
-    }
+.panel {
+  background: linear-gradient(145deg, #17243b, #101a2c);
+  border: 1px solid #30415d;
+  border-radius: 22px;
+  padding: 21px;
+  margin-bottom: 17px;
+  box-shadow: 0 15px 40px #0005;
+}
 
-    .move {
-      background: #2563eb;
-      font-size: 30px;
-    }
+.section-title {
+  font-size: 12px;
+  color: var(--cyan);
+  letter-spacing: 2px;
+  margin-bottom: 17px;
+  font-weight: 800;
+}
 
-    .move span {
-      display: block;
-      font-size: 12px;
-      margin-top: 5px;
-    }
+.status-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #080f1e;
+  padding: 13px 15px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  border: 1px solid #263750;
+}
 
-    .stop {
-      background: #dc2626;
-      font-size: 19px;
-      box-shadow: 0 0 15px #dc262655;
-    }
+.status-label {
+  font-size: 12px;
+  color: var(--muted);
+}
 
-    .empty {
-      visibility: hidden;
-    }
+#status {
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffbf47;
+}
 
-    .speed-box {
-      background: #0f172a;
-      padding: 15px;
-      border-radius: 12px;
-    }
+input:not([type="range"]) {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #080f1e;
+  color: white;
+  border: 1px solid #30415d;
+  border-radius: 11px;
+  outline: none;
+  font-size: 14px;
+}
 
-    #speed {
-      accent-color: #3b82f6;
-    }
+input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px #3985ff22;
+}
 
-    button:active {
-      transform: scale(0.96);
-    }
-  </style>
+button {
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.connect {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #2475f5, #42a5ff);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  box-shadow: 0 5px 20px #2475f555;
+  margin-top: 3px;
+}
+
+.connect:active {
+  transform: scale(.98);
+}
+
+.speed-card {
+  background: #080f1e;
+  padding: 17px;
+  border: 1px solid #263750;
+  border-radius: 15px;
+  margin-bottom: 20px;
+}
+
+.speed-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.speed-top span:first-child {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#speedValue {
+  color: var(--cyan);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+#speed {
+  width: 100%;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+
+.speed-scale {
+  display: flex;
+  justify-content: space-between;
+  color: #65758e;
+  font-size: 10px;
+  margin-top: 7px;
+}
+
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.empty {
+  visibility: hidden;
+}
+
+.move, .stop {
+  height: 88px;
+  border: 1px solid #45628d;
+  border-radius: 17px;
+  color: white;
+  touch-action: none;
+  user-select: none;
+  transition: transform .1s, filter .1s;
+}
+
+.move {
+  background: linear-gradient(145deg, #307ff2, #1750b7);
+  box-shadow: 0 6px 18px #1750b755;
+  font-size: 28px;
+}
+
+.move span {
+  display: block;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+.stop {
+  background: linear-gradient(145deg, #fa4b59, #b81730);
+  border-color: #ff7a83;
+  box-shadow: 0 6px 20px #e51e3e55;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.move:active, .stop:active {
+  transform: scale(.94);
+  filter: brightness(1.25);
+}
+
+.instructions {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 20px;
+}
+
+.warning {
+  color: #ffbf47;
+}
+
+footer {
+  text-align: center;
+  color: #65758e;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 12px;
+}
+
+@media (max-width: 360px) {
+  .move, .stop {
+    height: 76px;
+  }
+  .panel {
+    padding: 15px;
+  }
+}
+</style>
 </head>
 
 <body>
 
-  <main class="panel">
+<div class="container">
 
-    <h1>🤖 ROBOT CONTROLLER</h1>
+<header>
+  <div class="logo">🤖</div>
+  <h1>ROBOT CONTROL</h1>
+  <div class="subtitle">REMOTE CONTROL SYSTEM</div>
+</header>
 
-    <p id="status">🔴 Non connesso</p>
+<section class="panel">
 
-    <h3>Connessione online</h3>
+  <div class="section-title">01 / CONNESSIONE</div>
 
-    <input
-      id="host"
-      placeholder="Indirizzo broker MQTT"
-      autocomplete="off"
-    >
+  <div class="status-box">
+    <span class="status-label">STATO DEL SISTEMA</span>
+    <span id="status">● OFFLINE</span>
+  </div>
 
-    <input
-      id="port"
-      type="number"
-      value="8084"
-      placeholder="Porta WebSocket"
-    >
+  <input id="host"
+    value="a8a1adbf.ala.eu-central-1.emqxsl.com"
+    placeholder="Broker MQTT">
 
-    <input
-      id="username"
-      placeholder="Nome utente MQTT"
-      autocomplete="username"
-    >
+  <input id="port"
+    type="number"
+    value="8084"
+    placeholder="Porta">
 
-    <input
-      id="password"
-      type="password"
-      placeholder="Password MQTT"
-      autocomplete="current-password"
-    >
+  <input id="username"
+    placeholder="Username MQTT"
+    autocomplete="username">
 
-    <button class="connect" id="connectButton">
-      CONNETTI AL ROBOT
+  <input id="password"
+    type="password"
+    placeholder="Password MQTT"
+    autocomplete="current-password">
+
+  <button class="connect" id="connectButton">
+    ⚡ CONNETTI AL ROBOT
+  </button>
+
+</section>
+
+<section class="panel">
+
+  <div class="section-title">02 / CONTROLLO VELOCITÀ</div>
+
+  <div class="speed-card">
+    <div class="speed-top">
+      <span>VELOCITÀ MOTORI</span>
+      <span><span id="speedValue">30</span>%</span>
+    </div>
+
+    <input id="speed"
+      type="range"
+      min="10"
+      max="100"
+      value="30">
+
+    <div class="speed-scale">
+      <span>MINIMA</span>
+      <span>MASSIMA</span>
+    </div>
+  </div>
+
+  <div class="section-title">03 / MOVIMENTO</div>
+
+  <div class="pad">
+
+    <div class="empty"></div>
+
+    <button class="move" data-command="FWD">
+      ▲
+      <span>AVANTI</span>
     </button>
 
-    <div class="speed-box">
-      <h3>
-        Velocità:
-        <span id="speedValue">30</span>%
-      </h3>
+    <div class="empty"></div>
 
-      <input
-        id="speed"
-        type="range"
-        min="10"
-        max="100"
-        value="30"
-      >
-    </div>
+    <button class="move" data-command="LEFT">
+      ◀
+      <span>SINISTRA</span>
+    </button>
 
-    <h3>COMANDI DI MOVIMENTO</h3>
+    <button class="stop" id="stopButton">
+      🛑
+      <br>STOP
+    </button>
 
-    <div class="pad">
+    <button class="move" data-command="RIGHT">
+      ▶
+      <span>DESTRA</span>
+    </button>
 
-      <div class="empty"></div>
+    <div class="empty"></div>
 
-      <button class="move" data-command="FWD">
-        ⬆️
-        <span>AVANTI</span>
-      </button>
+    <button class="move" data-command="REV">
+      ▼
+      <span>INDIETRO</span>
+    </button>
 
-      <div class="empty"></div>
+    <div class="empty"></div>
 
-      <button class="move" data-command="LEFT">
-        ⬅️
-        <span>SINISTRA</span>
-      </button>
+  </div>
 
-      <button class="stop" id="stopButton">
-        🛑<br>
-        STOP<br>
-        EMERGENZA
-      </button>
+  <div class="instructions">
+    Tieni premuta una freccia per muovere il robot.<br>
+    Rilascia per fermarlo automaticamente.<br>
+    <span class="warning">STOP interrompe immediatamente i comandi.</span>
+  </div>
 
-      <button class="move" data-command="RIGHT">
-        ➡️
-        <span>DESTRA</span>
-      </button>
+</section>
 
-      <div class="empty"></div>
+<footer>
+  ROBOT CONTROL SYSTEM • MQTT • ESP32
+</footer>
 
-      <button class="move" data-command="REV">
-        ⬇️
-        <span>INDIETRO</span>
-      </button>
-
-      <div class="empty"></div>
-
-    </div>
-
-    <p>Per muovere il robot, tieni premuta una freccia.</p>
-    <p>Rilasciando il pulsante viene inviato STOP.</p>
-
-  </main>
+</div>
 
 <script>
-  let client = null;
-  let interval = null;
+let client = null;
+let interval = null;
 
-  const topic = "robot/robot01/cmd";
+const topic = "robot/robot01/cmd";
+const statusText = document.getElementById("status");
 
-  const statusText = document.getElementById("status");
+function setStatus(message, color) {
+  statusText.textContent = message;
+  statusText.style.color = color;
+}
 
-  function setStatus(message) {
-    statusText.textContent = message;
+function connectMQTT() {
+  const host = document.getElementById("host").value.trim();
+  const port = document.getElementById("port").value.trim();
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  if (!host || !port || !username || !password) {
+    alert("Inserisci tutti i dati MQTT.");
+    return;
   }
 
-  function connectMQTT() {
-    const host = document.getElementById("host").value.trim();
-    const port = document.getElementById("port").value.trim();
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+  emergencyStop();
 
-    if (!host || !port || !username || !password) {
-      alert("Inserisci tutti i dati MQTT.");
-      return;
+  if (client) {
+    client.end(true);
+    client = null;
+  }
+
+  setStatus("● CONNESSIONE...", "#ffbf47");
+
+  client = mqtt.connect(
+    `wss://${host}:${port}/mqtt`,
+    {
+      username: username,
+      password: password,
+      clientId: "robot_controller_" +
+        Math.random().toString(16).slice(2),
+      clean: true,
+      reconnectPeriod: 3000,
+      connectTimeout: 10000
     }
+  );
 
-    if (client) {
-      client.end(true);
-      client = null;
-    }
-
-    setStatus("🟡 Connessione in corso...");
-
-    client = mqtt.connect(
-      `wss://${host}:${port}/mqtt`,
-      {
-        username: username,
-        password: password,
-        clientId: "robot_controller_" +
-          Math.random().toString(16).slice(2),
-        clean: true,
-        reconnectPeriod: 3000,
-        connectTimeout: 10000
-      }
-    );
-
-    client.on("connect", () => {
-      setStatus("🟢 CONNESSO AL ROBOT");
-    });
-
-    client.on("reconnect", () => {
-      emergencyStop();
-      setStatus("🟡 Riconnessione...");
-    });
-
-    client.on("error", (error) => {
-      console.error(error);
-      setStatus("🔴 Errore di connessione");
-    });
-
-    client.on("close", () => {
-      emergencyStop();
-      setStatus("🔴 Disconnesso");
-    });
-  }
-
-  function sendCommand(command) {
-    if (!client || !client.connected) return;
-
-    const speed = document.getElementById("speed").value;
-
-    client.publish(
-      topic,
-      `${command},${speed}`,
-      { qos: 0 }
-    );
-  }
-
-  function emergencyStop() {
-    clearInterval(interval);
-    interval = null;
-
-    if (client && client.connected) {
-      client.publish(topic, "STOP");
-    }
-  }
-
-  document.getElementById("connectButton")
-    .addEventListener("click", connectMQTT);
-
-  document.getElementById("stopButton")
-    .addEventListener("click", emergencyStop);
-
-  document.getElementById("speed")
-    .addEventListener("input", (event) => {
-      document.getElementById("speedValue").textContent =
-        event.target.value;
-    });
-
-  document.querySelectorAll("[data-command]")
-    .forEach(button => {
-
-      button.addEventListener("pointerdown", event => {
-        event.preventDefault();
-
-        if (!client || !client.connected) {
-          setStatus("🔴 Prima connettiti al robot");
-          return;
-        }
-
-        clearInterval(interval);
-
-        sendCommand(button.dataset.command);
-
-        interval = setInterval(() => {
-          sendCommand(button.dataset.command);
-        }, 200);
-      });
-
-      button.addEventListener("pointerup", emergencyStop);
-      button.addEventListener("pointerleave", emergencyStop);
-      button.addEventListener("pointercancel", emergencyStop);
-    });
-
-  window.addEventListener("blur", emergencyStop);
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) emergencyStop();
+  client.on("connect", () => {
+    setStatus("● ONLINE", "#23d18b");
   });
 
-  window.addEventListener("beforeunload", emergencyStop);
+  client.on("reconnect", () => {
+    emergencyStop();
+    setStatus("● RICONNESSIONE...", "#ffbf47");
+  });
+
+  client.on("error", (error) => {
+    console.error(error);
+    emergencyStop();
+    setStatus("● ERRORE", "#f04452");
+  });
+
+  client.on("close", () => {
+    emergencyStop();
+    setStatus("● OFFLINE", "#f04452");
+  });
+}
+
+function sendCommand(command) {
+  if (!client || !client.connected) return;
+
+  const speed = document.getElementById("speed").value;
+
+  client.publish(
+    topic,
+    `${command},${speed}`,
+    { qos: 0 }
+  );
+}
+
+function emergencyStop() {
+  clearInterval(interval);
+  interval = null;
+
+  if (client && client.connected) {
+    client.publish(topic, "STOP", { qos: 0 });
+  }
+}
+
+document.getElementById("connectButton")
+  .addEventListener("click", connectMQTT);
+
+document.getElementById("stopButton")
+  .addEventListener("click", emergencyStop);
+
+document.getElementById("speed")
+  .addEventListener("input", (event) => {
+    document.getElementById("speedValue").textContent =
+      event.target.value;
+  });
+
+document.querySelectorAll("[data-command]")
+  .forEach(button => {
+
+    button.addEventListener("pointerdown", event => {
+      event.preventDefault();
+
+      if (!client || !client.connected) {
+        setStatus("● PRIMA CONNETTITI", "#f04452");
+        return;
+      }
+
+      clearInterval(interval);
+      sendCommand(button.dataset.command);
+
+      interval = setInterval(() => {
+        sendCommand(button.dataset.command);
+      }, 200);
+    });
+
+    button.addEventListener("pointerup", emergencyStop);
+    button.addEventListener("pointerleave", emergencyStop);
+    button.addEventListener("pointercancel", emergencyStop);
+  });
+
+window.addEventListener("blur", emergencyStop);
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) emergencyStop();
+});
+
+window.addEventListener("beforeunload", emergencyStop);
 </script>
 
 </body>
